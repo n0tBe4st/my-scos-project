@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCOS Practice Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .sidebar-link { @apply flex items-center p-3 text-gray-300 hover:bg-slate-700 hover:text-white rounded-lg transition-all cursor-pointer; }
+        .card { @apply bg-white p-6 rounded-xl shadow-sm border border-gray-100; }
+    </style>
+</head>
+<body class="bg-gray-50 flex">
+
+    <nav class="w-72 h-screen bg-slate-900 text-white p-6 fixed shadow-xl">
+        <div class="mb-10">
+            <h2 class="text-2xl font-extrabold tracking-tight text-blue-400">SCOS System</h2>
+            <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Practice Environment</p>
+        </div>
+        
+        <ul class="space-y-2">
+            <li onclick="showPage('dashboard')" class="sidebar-link">📊 Dashboard</li>
+            <li onclick="showPage('inventory')" class="sidebar-link">📦 Inventory Management</li>
+            <li onclick="showPage('suppliers')" class="sidebar-link">🤝 Supplier Network</li>
+            <li onclick="showPage('orders')" class="sidebar-link">🚚 Logistics & Orders</li>
+            <li onclick="showPage('analytics')" class="sidebar-link">📈 SCM Analytics</li>
+        </ul>
+
+        <div class="absolute bottom-10 left-6 text-xs text-gray-500">
+            Status: <span class="text-green-500">● Operational</span>
+        </div>
+    </nav>
+
+    <main class="ml-72 p-12 w-full">
+        <div id="content-area">
+            <div class="max-w-4xl">
+                <h1 class="text-4xl font-bold text-gray-800">Welcome back, Logistics Lead.</h1>
+                <p class="text-gray-500 mt-4 text-lg">Select a module from the sidebar to begin practicing your Supply Chain operations.</p>
+                <div class="mt-10 grid grid-cols-2 gap-6">
+                    <div class="card bg-blue-50 border-blue-100">
+                        <h3 class="font-bold text-blue-800">Inventory Status</h3>
+                        <p class="text-blue-600 text-sm mt-1">4 SKUs reaching critical reorder points.</p>
+                    </div>
+                    <div class="card bg-green-50 border-green-100">
+                        <h3 class="font-bold text-green-800">Inbound Freight</h3>
+                        <p class="text-green-600 text-sm mt-1">2 shipments cleared customs today.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const pages = {
+            dashboard: `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Operations Dashboard</h1>
+                <div class="grid grid-cols-3 gap-6">
+                    <div class="card"><h4 class="text-gray-500 text-sm">Total Value</h4><p class="text-2xl font-bold">$1.2M</p></div>
+                    <div class="card"><h4 class="text-gray-500 text-sm">Active Orders</h4><p class="text-2xl font-bold">24</p></div>
+                    <div class="card"><h4 class="text-gray-500 text-sm">Warehouse Cap.</h4><p class="text-2xl font-bold">82%</p></div>
+                </div>`,
+            
+            inventory: `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h1>
+                <div class="card">
+                    <table class="w-full text-left">
+                        <thead><tr class="border-b text-gray-400 text-sm uppercase"><th>SKU</th><th>Item Name</th><th>Quantity</th><th>Status</th></tr></thead>
+                        <tbody class="text-gray-700">
+                            <tr class="border-b"><td class="py-4">#STL-992</td><td>Steel Rods (10m)</td><td>1,200</td><td class="text-green-500">In Stock</td></tr>
+                            <tr class="border-b"><td class="py-4">#ALU-441</td><td>Aluminum Sheets</td><td>14</td><td class="text-red-500">Low Stock</td></tr>
+                        </tbody>
+                    </table>
+                </div>`,
+
+            suppliers: `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Supplier Network</h1>
+                <div class="grid grid-cols-2 gap-6">
+                    <div class="card"><strong>Global Steel Co.</strong><p class="text-sm text-gray-500">Lead Time: 14 Days</p></div>
+                    <div class="card"><strong>Fast-Pack Logistics</strong><p class="text-sm text-gray-500">Lead Time: 2 Days</p></div>
+                </div>`,
+
+            orders: `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">Logistics & Orders</h1>
+                <div class="card p-10 text-center border-dashed border-2 text-gray-400">
+                    No active shipments in transit. Click "Create PO" to start.
+                </div>`,
+
+            analytics: `
+                <h1 class="text-3xl font-bold text-gray-800 mb-6">SCM Analytics</h1>
+                <div class="card h-64 flex items-center justify-center text-gray-400 bg-gray-100">
+                    [Chart: Inventory Turnover Ratio]
+                </div>`
+        };
+
+        function showPage(pageId) {
+            document.getElementById('content-area').innerHTML = pages[pageId];
+        }
+    </script>
+</body>
+</html>
