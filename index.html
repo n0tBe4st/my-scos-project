@@ -1,101 +1,173 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="google-site-verification" content="-E_RpT0EFzgl_Horhxd6v3BSc5Wixv6ZFRapuapNqmA" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SCOS Practice Portal</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        .sidebar-link { @apply flex items-center p-3 text-gray-300 hover:bg-slate-700 hover:text-white rounded-lg transition-all cursor-pointer; }
-        .card { @apply bg-white p-6 rounded-xl shadow-sm border border-gray-100; }
-    </style>
-</head>
-<body class="bg-gray-50 flex">
+<script>
+    // ====== APPLICATION DATA ======
+    let inventory = [
+        { sku: "STL-992", name: "Steel Rods (10m)", qty: 1200, price: 25 },
+        { sku: "ALU-441", name: "Aluminum Sheets", qty: 14, price: 40 },
+        { sku: "COP-210", name: "Copper Wires", qty: 320, price: 15 },
+        { sku: "PLS-778", name: "Plastic Tubing", qty: 500, price: 8 }
+    ];
 
-    <nav class="w-72 h-screen bg-slate-900 text-white p-6 fixed shadow-xl">
-        <div class="mb-10">
-            <h2 class="text-2xl font-extrabold tracking-tight text-blue-400">SCOS System</h2>
-            <p class="text-xs text-gray-400 uppercase tracking-widest mt-1">Practice Environment</p>
+    let cart = [];
+    let orders = [];
+
+    // ====== PAGE TEMPLATES ======
+    function renderDashboard() {
+        return `
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Operations Dashboard</h1>
+        <div class="grid grid-cols-3 gap-6">
+            <div class="card"><h4 class="text-gray-500 text-sm">Total Value</h4>
+            <p class="text-2xl font-bold">$${calculateInventoryValue()}</p></div>
+            <div class="card"><h4 class="text-gray-500 text-sm">Active Orders</h4>
+            <p class="text-2xl font-bold">${orders.length}</p></div>
+            <div class="card"><h4 class="text-gray-500 text-sm">Warehouse Cap.</h4>
+            <p class="text-2xl font-bold">${Math.floor(Math.random()*20+75)}%</p></div>
+        </div>`;
+    }
+
+    function renderInventory() {
+        return `
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h1>
+        <meta name="google-site-verification" content="-E_RpT0EFzgl_Horhxd6v3BSc5Wixv6ZFRapuapNqmA" />
+        <div class="card">
+            <table class="w-full text-left">
+                <thead>
+                    <tr class="border-b text-gray-400 text-sm uppercase">
+                        <th>SKU</th><th>Item</th><th>Qty</th><th>Price</th><th>Status</th><th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${inventory.map(item => `
+                        <tr class="border-b">
+                            <td class="py-3">${item.sku}</td>
+                            <td>${item.name}</td>
+                            <td>${item.qty}</td>
+                            <td>$${item.price}</td>
+                            <td class="${item.qty < 20 ? 'text-red-500' : 'text-green-500'}">
+                                ${item.qty < 20 ? 'Low Stock' : 'In Stock'}
+                            </td>
+                            <td>
+                                <button onclick="addToCart('${item.sku}')" 
+                                class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                Add to Cart
+                                </button>
+                            </td>
+                        </tr>
+                    `).join("")}
+                </tbody>
+            </table>
         </div>
-        
-        <ul class="space-y-2">
-            <li onclick="showPage('dashboard')" class="sidebar-link">📊 Dashboard</li>
-            <li onclick="showPage('inventory')" class="sidebar-link">📦 Inventory Management</li>
-            <li onclick="showPage('suppliers')" class="sidebar-link">🤝 Supplier Network</li>
-            <li onclick="showPage('orders')" class="sidebar-link">🚚 Logistics & Orders</li>
-            <li onclick="showPage('analytics')" class="sidebar-link">📈 SCM Analytics</li>
-        </ul>
+        <div class="mt-6">
+            <button onclick="showCart()" class="bg-green-600 text-white px-6 py-2 rounded">
+                View Cart (${cart.length})
+            </button>
+        </div>`;
+    }
 
-        <div class="absolute bottom-10 left-6 text-xs text-gray-500">
-            Status: <span class="text-green-500">● Operational</span>
-        </div>
-    </nav>
+    function renderCart() {
+        return `
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Purchase Cart</h1>
+        <div class="card">
+            ${cart.length === 0 ? "<p>Cart is empty.</p>" : `
+                <ul class="space-y-3">
+                    ${cart.map(item => `
+                        <li class="flex justify-between">
+                            ${item.name} - $${item.price}
+                            <button onclick="removeFromCart('${item.sku}')" 
+                            class="text-red-500">Remove</button>
+                        </li>
+                    `).join("")}
+                </ul>
+                <div class="mt-6 font-bold">Total: $${calculateCartTotal()}</div>
+                <button onclick="checkout()" 
+                class="mt-4 bg-blue-600 text-white px-6 py-2 rounded">
+                Place Order
+                </button>
+            `}
+        </div>`;
+    }
 
-    <main class="ml-72 p-12 w-full">
-        <div id="content-area">
-            <div class="max-w-4xl">
-                <h1 class="text-4xl font-bold text-gray-800">Welcome back, Logistics Lead.</h1>
-                <p class="text-gray-500 mt-4 text-lg">Select a module from the sidebar to begin practicing your Supply Chain operations.</p>
-                <div class="mt-10 grid grid-cols-2 gap-6">
-                    <div class="card bg-blue-50 border-blue-100">
-                        <h3 class="font-bold text-blue-800">Inventory Status</h3>
-                        <p class="text-blue-600 text-sm mt-1">4 SKUs reaching critical reorder points.</p>
-                    </div>
-                    <div class="card bg-green-50 border-green-100">
-                        <h3 class="font-bold text-green-800">Inbound Freight</h3>
-                        <p class="text-green-600 text-sm mt-1">2 shipments cleared customs today.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </main>
+    function renderOrders() {
+        return `
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Order Status</h1>
+        <div class="card">
+            ${orders.length === 0 ? "No active orders." : `
+                <ul class="space-y-4">
+                    ${orders.map(order => `
+                        <li class="border-b pb-3">
+                            <strong>Order #${order.id}</strong> - $${order.total}
+                            <p>Status: <span class="font-bold">${order.status}</span></p>
+                            <button onclick="advanceStatus(${order.id})"
+                            class="mt-2 bg-indigo-500 text-white px-4 py-1 rounded">
+                            Advance Status
+                            </button>
+                        </li>
+                    `).join("")}
+                </ul>
+            `}
+        </div>`;
+    }
 
-    <script>
-        const pages = {
-            dashboard: `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Operations Dashboard</h1>
-                <div class="grid grid-cols-3 gap-6">
-                    <div class="card"><h4 class="text-gray-500 text-sm">Total Value</h4><p class="text-2xl font-bold">$1.2M</p></div>
-                    <div class="card"><h4 class="text-gray-500 text-sm">Active Orders</h4><p class="text-2xl font-bold">24</p></div>
-                    <div class="card"><h4 class="text-gray-500 text-sm">Warehouse Cap.</h4><p class="text-2xl font-bold">82%</p></div>
-                </div>`,
-            
-            inventory: `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Inventory Management</h1>
-                <div class="card">
-                    <table class="w-full text-left">
-                        <thead><tr class="border-b text-gray-400 text-sm uppercase"><th>SKU</th><th>Item Name</th><th>Quantity</th><th>Status</th></tr></thead>
-                        <tbody class="text-gray-700">
-                            <tr class="border-b"><td class="py-4">#STL-992</td><td>Steel Rods (10m)</td><td>1,200</td><td class="text-green-500">In Stock</td></tr>
-                            <tr class="border-b"><td class="py-4">#ALU-441</td><td>Aluminum Sheets</td><td>14</td><td class="text-red-500">Low Stock</td></tr>
-                        </tbody>
-                    </table>
-                </div>`,
-
-            suppliers: `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Supplier Network</h1>
-                <div class="grid grid-cols-2 gap-6">
-                    <div class="card"><strong>Global Steel Co.</strong><p class="text-sm text-gray-500">Lead Time: 14 Days</p></div>
-                    <div class="card"><strong>Fast-Pack Logistics</strong><p class="text-sm text-gray-500">Lead Time: 2 Days</p></div>
-                </div>`,
-
-            orders: `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">Logistics & Orders</h1>
-                <div class="card p-10 text-center border-dashed border-2 text-gray-400">
-                    No active shipments in transit. Click "Create PO" to start.
-                </div>`,
-
-            analytics: `
-                <h1 class="text-3xl font-bold text-gray-800 mb-6">SCM Analytics</h1>
-                <div class="card h-64 flex items-center justify-center text-gray-400 bg-gray-100">
-                    [Chart: Inventory Turnover Ratio]
-                </div>`
-        };
-
-        function showPage(pageId) {
-            document.getElementById('content-area').innerHTML = pages[pageId];
+    // ====== CORE FUNCTIONS ======
+    function addToCart(sku) {
+        const item = inventory.find(i => i.sku === sku);
+        if (item && item.qty > 0) {
+            cart.push(item);
+            item.qty--;
+            showPage('inventory');
         }
-    </script>
-</body>
-</html>
+    }
+
+    function removeFromCart(sku) {
+        cart = cart.filter(i => i.sku !== sku);
+        showCart();
+    }
+
+    function checkout() {
+        const newOrder = {
+            id: Date.now(),
+            total: calculateCartTotal(),
+            status: "Processing"
+        };
+        orders.push(newOrder);
+        cart = [];
+        showPage('orders');
+    }
+
+    function advanceStatus(orderId) {
+        const order = orders.find(o => o.id === orderId);
+        if (!order) return;
+
+        if (order.status === "Processing") order.status = "Shipped";
+        else if (order.status === "Shipped") order.status = "Delivered";
+        else order.status = "Completed";
+
+        showPage('orders');
+    }
+
+    function calculateInventoryValue() {
+        return inventory.reduce((sum, i) => sum + (i.qty * i.price), 0);
+    }
+
+    function calculateCartTotal() {
+        return cart.reduce((sum, i) => sum + i.price, 0);
+    }
+
+    // ====== PAGE SWITCHER ======
+    function showPage(pageId) {
+        if (pageId === "dashboard")
+            document.getElementById('content-area').innerHTML = renderDashboard();
+        else if (pageId === "inventory")
+            document.getElementById('content-area').innerHTML = renderInventory();
+        else if (pageId === "orders")
+            document.getElementById('content-area').innerHTML = renderOrders();
+        else
+            document.getElementById('content-area').innerHTML = renderDashboard();
+    }
+
+    function showCart() {
+        document.getElementById('content-area').innerHTML = renderCart();
+    }
+
+    // Load dashboard initially
+    showPage('dashboard');
+</script>
